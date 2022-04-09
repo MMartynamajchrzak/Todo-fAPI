@@ -1,15 +1,21 @@
 from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app import models
-from app.auth import get_current_user
-from app.db import engine, SessionLocal
-from app.exceptions import get_user_exception
+from apps.Todos import models
+from apps.Users.auth import get_current_user
+from config.db import engine, SessionLocal
+from apps.exceptions import get_user_exception
 
-app = FastAPI()
+router = APIRouter(
+    prefix="/todos",
+    tags=["todos"],
+    responses={
+        404: {"description": "Not found"}
+    }
+)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -30,13 +36,13 @@ class Todo(BaseModel):
 
 
 """Get all todos"""
-@app.get("/")
+@router.get("/")
 async def read_all(db: Session = Depends(get_db)):
     return db.query(models.ToDos).all()
 
 
 """Get all todos for a given user"""
-@app.get("/todos/user")
+@router.get("/user")
 async def read_all_by_user(user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user:
         raise get_user_exception()
@@ -44,7 +50,7 @@ async def read_all_by_user(user: dict = Depends(get_current_user), db: Session =
 
 
 """Get specific todo"""
-@app.get("/todo/{todo_id}")
+@router.get("/{todo_id}")
 async def read_todo(todo_id: int, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user:
         raise get_user_exception()
@@ -60,7 +66,7 @@ async def read_todo(todo_id: int, user: dict = Depends(get_current_user), db: Se
 
 
 """Create todo"""
-@app.post("/")
+@router.post("/")
 async def create_todo(todo: Todo, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user:
         get_user_exception()
@@ -80,7 +86,7 @@ async def create_todo(todo: Todo, user: dict = Depends(get_current_user), db: Se
 
 
 """Update given todo"""
-@app.put("/{todo_id}")
+@router.put("/{todo_id}")
 async def update_todo(todo_id: int, todo: Todo, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user:
         get_user_exception()
@@ -105,7 +111,7 @@ async def update_todo(todo_id: int, todo: Todo, user: dict = Depends(get_current
 
 
 """Delete given todo"""
-@app.delete("/{todo_id}")
+@router.delete("/{todo_id}")
 async def delete_todo(todo_id: int, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user:
         raise get_user_exception()
