@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -12,6 +13,9 @@ from sqlalchemy.orm import Session
 import app.models as models
 from app.db import SessionLocal, engine
 from app.exceptions import token_exception, get_user_exception
+
+# load environmental
+load_dotenv()
 
 ALGORITHM = "HS256"
 
@@ -80,7 +84,7 @@ def create_access_token(username: str, user_id: int, expires_delta: Optional[tim
     return jwt.encode(encode, os.getenv("SECRET_KEY"), algorithm=ALGORITHM)
 
 
-async def get_current_user(token:str = Depends(oauth2_bearer)):
+async def get_current_user(token: str = Depends(oauth2_bearer)):
     try:
         payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[ALGORITHM])
         username: str = payload.get("sub")
