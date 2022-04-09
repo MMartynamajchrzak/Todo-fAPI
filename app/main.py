@@ -33,7 +33,7 @@ async def read_all(db: Session = Depends(get_db)):
     return db.query(models.ToDos).all()
 
 
-"""get specific todo"""
+"""Get specific todo"""
 @app.get("/todo/{todo_id}")
 async def read_todo(todo_id: int, db: Session = Depends(get_db)):
     todo_model = db.query(models.ToDos).filter(models.ToDos.id == todo_id).first()
@@ -43,7 +43,7 @@ async def read_todo(todo_id: int, db: Session = Depends(get_db)):
     raise http_exception()
 
 
-"""create todo"""
+"""Create todo"""
 @app.post("/")
 async def create_todo(todo: Todo, db: Session = Depends(get_db)):
     todo_model = models.ToDos()
@@ -59,6 +59,7 @@ async def create_todo(todo: Todo, db: Session = Depends(get_db)):
     return successful_response(201)
 
 
+"""Update given todo"""
 @app.put("/{todo_id}")
 async def update_todo(todo_id: int, todo: Todo, db: Session = Depends(get_db)):
     todo_model = db.query(models.ToDos).filter(models.ToDos.id == todo_id).first()
@@ -77,6 +78,7 @@ async def update_todo(todo_id: int, todo: Todo, db: Session = Depends(get_db)):
     return successful_response(200)
 
 
+"""Delete given todo"""
 @app.delete("/{todo_id}")
 async def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     todo_model = db.query(models.ToDos).filter(models.ToDos.id == todo_id).first()
@@ -90,6 +92,7 @@ async def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     return successful_response(204)
 
 
+"""Returns dict with successful response"""
 def successful_response(status_code: int) -> dict:
     return {
         "status_code": status_code,
@@ -97,5 +100,6 @@ def successful_response(status_code: int) -> dict:
     }
 
 
+"""Returns Http exception"""
 def http_exception():
     return HTTPException(status_code=404, detail="Todo not found!")
